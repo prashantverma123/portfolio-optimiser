@@ -15,6 +15,7 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.logback.classic)
     implementation(libs.apache.csv)
+    implementation(libs.jedis)
 
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

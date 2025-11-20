@@ -1,6 +1,7 @@
 package com.example.backend
 
 import com.example.backend.events.FileUploadEventBus
+import com.example.backend.events.FileUploadEventBusFactory
 import com.example.backend.events.FileUploadedEvent
 import com.example.backend.processing.CsvUserProcessor
 import com.example.backend.storage.UserStore
@@ -50,12 +51,14 @@ fun Application.module() {
     Files.createDirectories(uploadDirectory)
 
     val processorScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    FileUploadEventBus.startProcessing(processorScope) { event ->
+    val eventBus = FileUploadEventBusFactory.create()
+    eventBus.startProcessing(processorScope) { event ->
         CsvUserProcessor.process(event)
     }
 
     environment.monitor.subscribe(ApplicationStopped) {
         processorScope.cancel()
+        eventBus.close()
     }
 
     routing {
@@ -107,7 +110,7 @@ fun Application.module() {
                 status = HttpStatusCode.BadRequest
             )
 
-            FileUploadEventBus.publish(FileUploadedEvent(path))
+            eventBus.publish(FileUploadedEvent(path))
 
             call.respond(
                 status = HttpStatusCode.Accepted,

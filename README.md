@@ -6,7 +6,7 @@ A small event-driven demo that accepts bulk user data via CSV, stores the upload
 
 - **Backend:** Kotlin 2.1 + Ktor 2.3 (Netty engine)
 - **Frontend:** React + Vite + TypeScript
-- **Messaging:** In-memory `Channel` used as a pub/sub queue so file uploads are decoupled from CSV parsing
+- **Messaging:** Pluggable queue: defaults to an in-memory `Channel` and can switch to Redis by setting `MESSAGE_BACKEND=redis`
 
 ## Repository Layout
 
@@ -41,7 +41,7 @@ cd backend
 ./gradlew run
 ```
 
-The server listens on port `8080` by default. Use the `PORT` environment variable to override the HTTP port and `UPLOAD_DIR` to change where temporary CSV files are stored.
+The server listens on port `8080` by default. Use the `PORT` environment variable to override the HTTP port and `UPLOAD_DIR` to change where temporary CSV files are stored. To process events through Redis instead of the in-memory channel, set `MESSAGE_BACKEND=redis` and optionally configure `REDIS_URI` (defaults to `redis://localhost:6379`) and `REDIS_QUEUE_KEY` (defaults to `file-uploads`).
 
 ## Running the Frontend
 
@@ -62,7 +62,7 @@ The UI expects the backend at `http://localhost:8080`. To point it elsewhere set
 
 ## Event-Driven Design
 
-1. **Upload** – the API saves the CSV to `uploads/` and publishes `FileUploadedEvent(path)` via an unbounded Kotlin `Channel`.
+1. **Upload** – the API saves the CSV to `uploads/` and publishes `FileUploadedEvent(path)` via the configured queue (in-memory channel by default; Redis if enabled).
 2. **Subscriber** – a coroutine consumer reads the events, parses the CSV with Apache Commons CSV, and pushes valid rows to an in-memory `UserStore`.
 3. **Error handling** – invalid rows are logged but do not stop processing. Every upload file is deleted after processing to keep the workspace clean.
 
@@ -83,4 +83,4 @@ id,firstName,lastName,email
 
 - **Storage** – user data is stored in a thread-safe `CopyOnWriteArrayList` to keep the demo simple.
 - **Validation** – both frontend and backend enforce the `.csv` extension; the backend also reports bad rows during parsing.
-- **Extensibility** – new subscribers can be added by consuming the same channel, and persisting to a real database would only require a new storage implementation.
+- **Extensibility** – new subscribers can be added by consuming the same queue, and persisting to a real database would only require a new storage implementation.
