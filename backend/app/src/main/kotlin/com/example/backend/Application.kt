@@ -4,6 +4,7 @@ import com.example.backend.events.FileUploadEventBus
 import com.example.backend.events.FileUploadEventBusFactory
 import com.example.backend.events.FileUploadedEvent
 import com.example.backend.processing.CsvUserProcessor
+import com.example.backend.storage.UserRecord
 import com.example.backend.storage.UserStore
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
@@ -63,7 +64,7 @@ fun Application.module() {
 
     routing {
         get("/api/users") {
-            call.respond(UserStore.getAll())
+            call.respond(UsersResponse(UserStore.getAll()))
         }
 
         post("/api/uploads") {
@@ -122,3 +123,6 @@ fun Application.module() {
 
 @Serializable
 data class UploadResponse(val message: String)
+
+@Serializable
+data class UsersResponse(val users: List<UserRecord>)

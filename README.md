@@ -34,6 +34,13 @@ gradle wrapper
 
 After that you can use the standard wrapper commands.
 
+### Running the backend from IntelliJ IDEA
+
+1. Open the `backend` folder as a Gradle project (IntelliJ will detect `build.gradle.kts`).
+2. Make sure the **Gradle JVM** is set to Java 17+ in *File → Settings → Build Tools → Gradle*.
+3. Let IntelliJ finish importing dependencies, then expand *backend » app » Tasks » application* in the Gradle tool window.
+4. Double-click **run** to start the server (it will honour the same environment variables like `PORT`, `UPLOAD_DIR`, and `MESSAGE_BACKEND`).
+
 ## Running the Backend
 
 ```bash
